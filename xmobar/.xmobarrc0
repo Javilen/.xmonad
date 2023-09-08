@@ -1,0 +1,127 @@
+Config { 
+
+   -- appearance
+    -- font =         "xft:FantasqueSansMono:size=11:bold:antialias=true"
+     font =         "xft:NotoSansMono:size=12:bold:antialias=true"
+    , additionalFonts = [ "xft:Mononoki:pixelsize=12:antialias=true:hinting=true"
+                        , "xft:Font Awesome 5 Free Solid:pixelsize=11"
+                        , "xft:Font Awesome 5 Brands:pixelsize=11"
+                        ]
+   , bgColor =      "black"
+   , fgColor =      "#646464"
+--   , position =     Top
+--   , position =    Static { xpos = 0, ypos = 0 , width = 2560 , height = 25 } 
+   , position =    Static { xpos = 0, ypos = 0 , width = 1920 , height = 25 } 
+   , border =   NoBorder   -- BottomB
+   , borderColor =  "#646464"
+   , alpha = 255   -- 175
+
+
+   -- layout
+   , sepChar =  "%"   -- delineator between plugin names and straight text
+   , alignSep = "}{"  -- separator between left-right alignment 
+   , iconRoot     = "/home/$USER/.xmonad/xpm/"  -- default: "."
+--   , template = " <action=`jgmenu_run`><fc=#ff6c6b>(-_-)</fc></action>  %UnsafeStdinReader% }{ %multicpu% | %memory% | %dynnetwork% | <action=`gsimplecal`>%date%</action> |||||||||||||| "
+   , template = " <action=`jgmenu_run`><fc=#ff6c6b>(-_-)</fc></action>  %UnsafeStdinReader% }\
+   \ { <fc=#51afef><action='alacritty -e glances'>[Cpu]: %cpu% </action></fc>| <fc=#c678dd>(Memory): %memory%</fc> | %battery% | <action=`gsimplecal`>%date%</action> "
+
+-- Backup
+ --  , template = " <action=`jgmenu_run`><fc=#ff6c6b>(-_-)</fc></action>  %UnsafeStdinReader% }\
+ --  \ { <fc=#51afef>[Cpu]: %cpu% </fc>| <action='glances'><fc=#c678dd>(Memory): %memory%</fc></action> | %battery% | <action=`gsimplecal`>%date%</action> "
+   -- general behavior
+   , lowerOnStart =     True    -- send to bottom of window stack on start
+   , hideOnStart =      False   -- start with window unmapped (hidden)
+   , allDesktops =      True    -- show on all desktops
+   , overrideRedirect = True    -- set the Override Redirect flag (Xlib)
+   , pickBroadest =     False   -- choose widest display (multi-monitor)
+   --   Numbers can be automatically colored according to their value. xmobar
+   --   decides color based on a three-tier/two-cutoff system, controlled by
+   --   command options:
+   --     --Low sets the low cutoff
+   --     --High sets the high cutoff
+   --
+   --     --low sets the color below --Low cutoff
+   --     --normal sets the color between --Low and --High cutoffs
+   --     --High sets the color above --High cutoff
+   --
+   --   The --template option controls how the plugin is displayed. Text
+   --   color can be set by enclosing in <fc></fc> tags. For more details
+   --   see http://projects.haskell.org/xmobar/#system-monitor-plugins.
+   , commands = 
+
+        -- weather monitor
+        [ Run Weather "RJTT" [ "--template", "<skyCondition> | <fc=#4682B4><tempC></fc>°C | <fc=#4682B4><rh></fc>% | <fc=#4682B4><pressure></fc>hPa"
+                             ] 36000
+
+        -- network activity monitor (dynamic interface resolution)
+        , Run DynNetwork     [ "--template" , "<dev>: <tx>kB/s | <rx>kB/s"
+                             , "--Low"      , "1000"       -- units: B/s
+                             , "--High"     , "5000"       -- units: B/s
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 10
+
+        -- cpu activity monitor
+        , Run MultiCpu       [ "--template" , "Cpu: <total0>% | <total1>%"
+                             , "--Low"      , "50"         -- units: %
+                             , "--High"     , "85"         -- units: %
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 10
+
+        -- cpu core temperature monitor
+        , Run CoreTemp       [ "--template" , "Temp: <core0>°C|<core1>°C"
+                             , "--Low"      , "70"        -- units: °C
+                             , "--High"     , "80"        -- units: °C
+                             , "--low"      , "darkgreen"
+                             , "--normal"   , "darkorange"
+                             , "--high"     , "darkred"
+                             ] 50
+       , Run Cpu [ "-t", "<fc=#8c7f80><bar></fc>",
+                  "-f", ":",
+                  "-H", "75",
+                  "-L", "25",
+                  "-h", "#C15A45",
+                  "-n", "#E4966D",
+                  "-l", "#BE8961" ] 10
+
+       , Run Memory  [ "-t", "<fc=#8c7f80><usedbar></fc>",
+                      "-f", ":",
+                      "-H", "75",
+                      "-L", "25",
+                      "-h", "#C15A45",
+                      "-n", "#E4966D",
+                      "-l", "#BE8961" ] 10  
+        -- battery monitor
+        , Run Battery        [ "--template" , "<fc=#51EFA8><acstatus></fc>"
+                             , "--Low"      , "25"        -- units: %
+                             , "--High"     , "75"        -- units: %
+                             , "--low"      , "#ff6c6b"   -- "darkred"
+                             , "--normal"   , "#c678dd" -- "darkorange"
+
+                             , "--high"     , "#51afef"  --  "darkgreen" 
+
+                             , "--" -- battery specific options
+                                       -- discharging status
+                                       , "-o"	, "<left>% (<timeleft>)"
+                                       -- AC "on" status
+                                       , "-O"	, "<fc=#51EFA8>Charging</fc>"
+                                       -- charged status
+                                       , "-i"	, "<fc=#51EFA8>Charged</fc>"
+                             ] 50                        
+
+        -- time and date indicator 
+        --   (%F = y-m-d date, %a = day of week, %T = h:m:s time)
+        , Run Date           "<fc=#ABABAB>%D (%a) %r</fc>" "date" 10
+        -- , Run ComX "pamixer" [ "--get-volume-human" ] "muted" "volume" 1
+
+        -- keyboard layout indicator
+        , Run Kbd            [ ("us(dvorak)" , "<fc=#00008B>DV</fc>")
+                             , ("us"         , "<fc=#8B0000>US</fc>")
+                             ]
+        , Run UnsafeStdinReader
+        ]
+   }
+
